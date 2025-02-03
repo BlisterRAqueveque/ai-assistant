@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AiModelService } from './ai-model.service';
-import { AiModelController } from './ai-model.controller';
+import { AiModelGateway } from './ai-model.gateway';
 
 @Module({
   imports: [HttpModule],
-  controllers: [AiModelController],
-  providers: [AiModelService],
+  providers: [AiModelService, AiModelGateway],
 })
 export class AiModelModule {}

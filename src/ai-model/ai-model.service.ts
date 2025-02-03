@@ -1,11 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { CreateAiModelDto } from './dto/create-ai-model.dto';
-import { UpdateAiModelDto } from './dto/update-ai-model.dto';
-import { firstValueFrom } from 'rxjs';
 import { envs } from '@/configuration';
-import { Model } from './entities/model.response';
 import { LLMSpecificModel, LMStudioClient } from '@lmstudio/sdk';
+import { HttpService } from '@nestjs/axios';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
+import { CreateAiModelDto } from './dto/create-ai-model.dto';
+import { Model } from './entities/model.response';
 
 @Injectable()
 export class AiModelService {
@@ -14,22 +13,18 @@ export class AiModelService {
 
   model: LLMSpecificModel | null = null;
   async create(data: CreateAiModelDto) {
-    const { userInput } = data;
+    const { userInput, history = [] } = data;
 
     this.model = await this.getModel();
 
-    const chatHistory = [];
-    chatHistory.push({ role: 'user', content: userInput });
+    history.push({ role: 'user', content: userInput });
 
     // Generar respuesta
-    const prediction = this.model.respond(chatHistory);
-    let reply = '';
+    const prediction = this.model.respond(history);
 
     for await (const { content } of prediction) {
-      reply += content;
-      process.stdout.write(content);
+      return content;
     }
-    return reply;
   }
   private async getModelId() {
     try {
@@ -44,7 +39,7 @@ export class AiModelService {
       throw new BadRequestException('Server error on response');
     }
   }
-  private async getModel() {
+  async getModel() {
     const idModel = await this.getModelId();
     const client = new LMStudioClient();
     //> Obtenemos los modelos cargados
